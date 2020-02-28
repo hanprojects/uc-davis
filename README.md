@@ -12,7 +12,7 @@
 ## Brief Description
 This is the repository for all of the prjects for UC Davis Computer Science courses. This is ONLY for educational purposes, NOT for research reference. 
 
-## Mentioned UC Berkeley Courses
+## Mentioned UC Davis Courses
 ECS 145: Scripting Languages
 
 ## Dedication 
