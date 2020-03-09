@@ -21,3 +21,59 @@
 
 # ----------- CODE STARTS AFTER THIS LINE ------------ #
 
+library(ggplot2)
+library(gganimate)
+library(dplyr)
+library(lattice) # in case use lattice format
+
+## choices()
+choices <- function() {
+  userInput <- readline(prompt = '1. Change tuning value\n2. Zoom in/out\n3. Run animation\n4. Quit and Save\n-->')
+  return(userInput)
+}
+
+## 1. changeTuning()
+changeTuning <- function() {
+  newTuning <- as.integer(readline(prompt = "Enter new tuning value: "))
+  return(newTuning)
+}
+
+## 2a. zoomIn()
+zoomIn <- function() {
+}
+
+## 2b. zoomOut()
+zoomOut <- function() {
+}
+
+## 3. runAnimation()
+runAnimation <- function() {
+}
+
+## 4. quitSave()
+quitSave <- function() {
+  break
+}
+
+## exploreShape()
+exploreShape <- function(x, estMethod, tuning, twoAtATime) {
+  
+  while(TRUE) {
+    ## estMethod cases
+    if (twoAtATime == FALSE) {
+      if (estMethod == 'density')
+        plot(density(x,bw=tuning))
+      if (estMethod == 'hist')
+       plot(hist(x,breaks=tuning))
+    }
+    
+    userInput <- choices()
+    
+    if (userInput == '1') {
+      newTuning <- changeTuning()
+      exploreShape(x, estMethod, newTuning, twoAtATime)
+    }
+  }
+  
+  return(densEst)
+}
