@@ -98,8 +98,6 @@ quitSave <- function() {
 ## exploreShape()
 exploreShape <- function(x, estMethod, tuning, twoAtATime) {
   tuning <- as.numeric(tuning)
-  list_x <- list()
-  list_x[1] <- x
   
   # FALSE case
   if (twoAtATime == FALSE) {
@@ -152,12 +150,14 @@ exploreShape <- function(x, estMethod, tuning, twoAtATime) {
       if (userInput == '1') {
         newTuning <- changeTuning()
         oldTuning <- tuning
+        
         if (estMethod == 'density') {
-          plot(density(x,bw=oldTuning))
+          lines(density(x,bw=oldTuning))
         }
         if (estMethod == 'hist') {
-          plot(hist(x,breaks=oldTuning))
+          lines(hist(x,breaks=oldTuning))
         }
+        
         par(new=TRUE)
         exploreShape(x, estMethod, newTuning, twoAtATime)
       }
