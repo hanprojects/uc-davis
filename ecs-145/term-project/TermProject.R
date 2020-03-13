@@ -55,7 +55,7 @@ changeTuning <- function() {
 
 ## 2. zoomIn()
 zoomIn <- function(x) {
-  print("Specify a subset of graph between 0 and ",length(x))
+  # print("Specify a subset of graph between 0 and ", as.integer(length(x)))
   print("Start index")
   start_index <- as.integer(readline(prompt="--> "))
   print("End index")
@@ -66,15 +66,15 @@ zoomIn <- function(x) {
 }
 
 ## 3. zoomOut()
-zoomOut <- function(x, zoomed_in_x) { # ERROR: zoomed_in_x cannot be found
-  print("Specify a subset of graph between 0 and ", as.character(length(x)))
+zoomOut <- function(x, zoomed_in_x) {
+  # print("Specify a subset of graph between 0 and ", as.character(length(x)))
   
   print("Start index")
   start_index <- as.integer(readline(prompt="--> "))
   print("End index")
   end_index <- as.integer(readline(prompt="--> "))
   
-  while ((start_index >= zoomed_in_x[1] & end_index <= zoomed_in_x[length(zoomed_in_x)]) | (start_index > x[1] | end_index < x[length(x)])) {
+  while ((start_index >= zoomed_in_x[1] & end_index <= zoomed_in_x[length(zoomed_in_x)])) {
     print("You are not zooming out! Please try again!")
     print("Start index")
     start_index <- as.integer(readline(prompt="--> "))
@@ -115,13 +115,13 @@ exploreShape <- function(x, estMethod, tuning, twoAtATime) {
       }
     
       else if (userInput == '2') {
-        zoomed_in_x <- zoomIn(x)
+        oldX <<- x
+        zoomed_in_x <<- zoomIn(x)
         exploreShape(zoomed_in_x, estMethod, tuning, twoAtATime)
-        
       }
-    
+      
       else if (userInput == '3') {
-        zoomed_out_x <- zoomOut(x, zoomed_in_x)
+        zoomed_out_x <<- zoomOut(oldX, zoomed_in_x)
         exploreShape(zoomed_out_x, estMethod, tuning, twoAtATime)
       }
     
@@ -135,6 +135,7 @@ exploreShape <- function(x, estMethod, tuning, twoAtATime) {
     }
   }
   
+  ## TRUE case
   else if (twoAtATime == TRUE) {
     if (estMethod == 'density') {
       plot(density(x,bw=tuning))
@@ -163,13 +164,13 @@ exploreShape <- function(x, estMethod, tuning, twoAtATime) {
       }
       
       else if (userInput == '2') {
-        zoomed_in_x <- zoomIn(x)
+        zoomed_in_x <<- zoomIn(x)
         exploreShape(zoomed_in_x, estMethod, tuning, twoAtATime)
         
       }
       
       else if (userInput == '3') {
-        zoomed_out_x <- zoomOut(x, zoomed_in_x)
+        zoomed_out_x <<- zoomOut(x, zoomed_in_x)
         exploreShape(zoomed_out_x, estMethod, tuning, twoAtATime)
       }
       
