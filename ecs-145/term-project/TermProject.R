@@ -74,7 +74,7 @@ zoomOut <- function(x, zoomed_in_x) {
   print("End index")
   end_index <- as.integer(readline(prompt="--> "))
   
-  while ((start_index >= zoomed_in_x[1] & end_index <= zoomed_in_x[length(zoomed_in_x)])) {
+  while ((start_index > zoomed_in_x[1] & end_index < zoomed_in_x[length(zoomed_in_x)])) {
     print("You are not zooming out! Please try again!")
     print("Start index")
     start_index <- as.integer(readline(prompt="--> "))
@@ -108,27 +108,27 @@ exploreShape <- function(x, estMethod, tuning, twoAtATime) {
 
     while(TRUE) {
       userInput <- choices()
-    
+      # Case 1:
       if (userInput == '1') {
         newTuning <- changeTuning()
         exploreShape(x, estMethod, newTuning, twoAtATime)
       }
-    
+      # Case 2:
       else if (userInput == '2') {
         oldX <<- x
         zoomed_in_x <<- zoomIn(x)
         exploreShape(zoomed_in_x, estMethod, tuning, twoAtATime)
       }
-      
+      # Case 3:
       else if (userInput == '3') {
         zoomed_out_x <<- zoomOut(oldX, zoomed_in_x)
         exploreShape(zoomed_out_x, estMethod, tuning, twoAtATime)
       }
-    
+      # Case 4:
       else if (userInput == '4') {
         # runAnimation()
       }
-    
+      # Case 5:
       else if (userInput == '5') {
         quitSave()
       }
@@ -153,27 +153,27 @@ exploreShape <- function(x, estMethod, tuning, twoAtATime) {
         oldTuning <- tuning
         
         if (estMethod == 'density') {
-          lines(density(x,bw=oldTuning))
+          lines(density(x,bw=oldTuning),add=TRUE)
         }
         if (estMethod == 'hist') {
-          lines(hist(x,breaks=oldTuning))
+          lines(hist(x,breaks=oldTuning),add=TRUE)
         }
         
         par(new=TRUE)
         exploreShape(x, estMethod, newTuning, twoAtATime)
       }
-      
+      # Case 2:
       else if (userInput == '2') {
+        oldX <<- x
         zoomed_in_x <<- zoomIn(x)
         exploreShape(zoomed_in_x, estMethod, tuning, twoAtATime)
-        
       }
-      
+      # Case 3:
       else if (userInput == '3') {
-        zoomed_out_x <<- zoomOut(x, zoomed_in_x)
+        zoomed_out_x <<- zoomOut(oldX, zoomed_in_x)
         exploreShape(zoomed_out_x, estMethod, tuning, twoAtATime)
       }
-      
+      # Case 4:
       else if (userInput == '4') {
         # runAnimation()
       }
