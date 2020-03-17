@@ -1,186 +1,351 @@
-# TermProject.R
-# ===============
-
-"""
-The goal of this project is to produce an R package that helps a user explore
-the effects of setting different values of breaks or bw. The nature of the exploration
-will be that the user will be repeatedly asked whether she wishes to change
-the current value of the tuning parameter, zoom in/out, etc. After exploration,
-the code will save some of the graphs that the user has found useful.
-
-exploreShape(x,estMethod,tuning,twoAtATime)
-- x: A numeric vector to be graphed.
-- estMethod: Either 'hist' or 'density'.
-- tuning: The intial value of either breaks or bw.
-- twoAtATime: If TRUE, always display the current graph
-superimposed on the previous one, to aid comparison.
-
-The code will repeatedly loop around, giving the user the following choices:
-- Give a new value of the tuning parameter.
-- Zoom in/out, the former meaning to redo the graph over a more narrow range of values of x.
-- Run an animation, consisting of the graph as the tuning parameter is varied
-in small increments from the choppiest/wiggliest to the smoothest.
-- Quit. The user will then be asked to specify some values of the tuning parameter
-for which the code will save the graphs, in forms that they can later be plotted by calling plot().
-
-The return value of the function will be an S3 object of class 'densEst'.
-It will include enough information to support generic functions print(), summary() and plot().
-
-The latter will plot all the saved plots. You can do this one at a time,
-with keyboard Enter meaning 'go to the next plot,' or plot them in a lattice format.
-
-You may place mild restictions on the user, e.g. maximum number of graphs formed.
-Of course, your report should have example sessions, showing the user's input and the graphs that resulted.
-"""
-
-# =============== CODE STARTS AFTER THIS LINE =============== #
-
+## Package used to generate methods for displaying graphs
+#install.packages("gganimate",dependencies=TRUE, repo="http://cran.rstudio.com/")
+#install.packages("transformr", dependecies=TRUE, repo="http://cran.rstudio.com/")
 library(ggplot2)
 library(gganimate)
-library(dplyr)
-library(pdftools)
-library(lattice) # in case use lattice format
+# library(transformr)
 
-## choices()
-choices <- function() {
-  userInput <- readline(prompt = '1. Change tuning value\n2. Zoom in\n3. Zoom out\n4. Run animation\n5. Quit and Save\n--> ')
-  return(userInput)
+
+## GENERIC FUNCTIONS
+
+## prints data of S3 object. Print of data vector is optional.
+print.densEst <- function(obj, printVector = FALSE) {
+   cat("Graph type is:",obj$estMethod,"\n")
+   cat("Set of tunings are: ")
+   print(obj$tunings)
+   if (printVector) {
+      cat("Data vector:\n")
+      print(obj$dataVector)
+   }
 }
 
-## 1. changeTuning()
-changeTuning <- function() {
-  newTuning <- as.integer(readline(prompt = "Enter new tuning value: "))
-  return(newTuning)
-}
-
-## 2. zoomIn()
-zoomIn <- function(x) {
-  # print("Specify a subset of graph between 0 and ", as.integer(length(x)))
-  print("Start index")
-  start_index <- as.integer(readline(prompt="--> "))
-  print("End index")
-  end_index <- as.integer(readline(prompt="--> "))
-  ## create subset
-  newX <- x[start_index:end_index]
-  return (newX)
-}
-
-## 3. zoomOut()
-zoomOut <- function(x, zoomed_in_x) {
-  # print("Specify a subset of graph between 0 and ", as.character(length(x)))
-  
-  print("Start index")
-  start_index <- as.integer(readline(prompt="--> "))
-  print("End index")
-  end_index <- as.integer(readline(prompt="--> "))
-  
-  while ((start_index > zoomed_in_x[1] & end_index < zoomed_in_x[length(zoomed_in_x)])) {
-    print("You are not zooming out! Please try again!")
-    print("Start index")
-    start_index <- as.integer(readline(prompt="--> "))
-    print("End index")
-    start_index <- as.integer(readline(prompt="--> "))
-  }
-  
-  zoomed_out_x <- x[start_index:end_index]
-  return(zoomed_out_x)
-}
-
-## 4. runAnimation()
-runAnimation <- function() {
-}
-
-## 5. quitSave()
-quitSave <- function() {
-  break;
-}
-
-## exploreShape()
-exploreShape <- function(x, estMethod, tuning, twoAtATime) {
-  tuning <- as.numeric(tuning)
-  
-  # FALSE case
-  if (twoAtATime == FALSE) {
-    if (estMethod == 'density')
-      plot(density(x,bw=tuning))
-    if (estMethod == 'hist')
-      plot(hist(x,breaks=tuning))
-
-    while(TRUE) {
-      userInput <- choices()
-      # Case 1:
-      if (userInput == '1') {
-        newTuning <- changeTuning()
-        exploreShape(x, estMethod, newTuning, twoAtATime)
+## plots function. Upon key press will close current graph and open next one
+## until all are plotted.
+plot.densEst <- function(obj) {
+   for (i in 1:length(obj$tunings)) {
+      X11()
+      if (obj$estMethod == "hist") {
+         hist(obj$dataVector, breaks = obj$tunings[i])
       }
-      # Case 2:
-      else if (userInput == '2') {
-        oldX <<- x
-        zoomed_in_x <<- zoomIn(x)
-        exploreShape(zoomed_in_x, estMethod, tuning, twoAtATime)
+      else {
+         plot(density(obj$dataVector, bw = obj$tunings[i]))
       }
-      # Case 3:
-      else if (userInput == '3') {
-        zoomed_out_x <<- zoomOut(oldX, zoomed_in_x)
-        exploreShape(zoomed_out_x, estMethod, tuning, twoAtATime)
+      readLines(file("stdin"), 1)
+      graphics.off()
+   }
+}
+
+## prints some basic statistical data about the data set, its est method
+## and some stats about the density
+summary.densEst <- function(obj) {
+   cat("Estimation method: ")
+   print(obj$estMethod)
+   print(paste("Mean of dataset:",mean(obj$dataVector)))
+   print(paste("Standard deviation of dataset:",sd(obj$dataVector)))
+   print(paste("Mean of bins:",mean(obj$tunings)))
+   print(paste("Standard deviation of bins",sd(obj$tunings)))
+}
+
+
+## HELPERS
+
+## when two at a time, allows for displaying graphs two at a time
+overlayGraphs <- function(subsetX, estMethod, graph, tuning) {
+   X11()
+   # DENSITY OVERLAY
+   if (estMethod == "density") {
+      newGraph <- density(subsetX, bw=tuning)
+      currentGraph <- graph
+      xlim <- c(-2000,2000)
+      ylim <- range(currentGraph$y, newGraph$y)
+      plot(currentGraph$x, currentGraph$y, col = 1, lwd = 2, 
+           type = "l", xlim = xlim, ylim = ylim)
+      lines(newGraph$x, newGraph$y, col = 2, lwd = 2)
+   }
+     
+   # HISTOGRAM OVERLAY
+   else if (estMethod == "hist") {
+      newGraph <- hist(subsetX, breaks=tuning)
+      currentGraph <- graph
+      xlim <- range(currentGraph$breaks, newGraph$breaks)
+      ylim <- c(0,max(c(currentGraph$count, newGraph$count)))
+      plot(currentGraph, col = rgb(173,216,230,max = 255, alpha = 80, 
+           names = "lt.blue"), xlim = xlim, ylim = ylim)
+      plot(newGraph, add=TRUE, 
+           col = rgb(255,192,203, max = 255, alpha = 80, 
+                     names = "lt.pink"))
+   }
+   ## wait for keystroke before closing
+   buffer <- readLines(file("stdin"), 1) 
+} 
+
+## returns S3 object that represents list of data with defined estMethod that
+## can be displayed with a variety of tunings
+getFinalGraphs <- function(x, estMethod) {
+   ## S3 object requires 3 components:
+   ## 1) The dataset x
+   ## 2) The estimation method
+   ## 3) The set of tunings
+   
+   thisEnv <- environment()
+   
+   ## get tuning list
+   tunings <- c()
+   while (TRUE) {
+      print("Enter a tuning parameter you want to use for this graph or q to quit")
+      tuning <- readLines(file("stdin"), 1)
+      if (tuning == "q") {
+         break
       }
-      # Case 4:
-      else if (userInput == '4') {
-        # runAnimation()
+      else if (is.na(as.integer(tuning))) {
+         print("Tuning must be a non-negative integer")
       }
-      # Case 5:
-      else if (userInput == '5') {
-        quitSave()
+      else {
+         tunings <- c(tunings, as.integer(tuning))
       }
-    }
-  }
-  
-  ## TRUE case
-  else if (twoAtATime == TRUE) {
-    if (estMethod == 'density') {
-      plot(density(x,bw=tuning))
-    }
-    if (estMethod == 'hist') {
-      plot(hist(x,breaks=tuning))
-    }
-    
-    while(TRUE) {
-      userInput <- choices()
+   }
+
+   ## create S3 obj
+   obj <- list (
+      dataVector = x,
+      tunings = tunings,
+      estMethod= estMethod
+   )
+
+   assign('this',obj,envir=thisEnv)
+   class(obj) <- "densEst"
+   return(obj)
+}
+
+## grabs values and runs animations based on supplied 
+runAnimation <- function(x, estMethod) {
+   print("Specify a starting tuning value ")
+   start_tuning <- as.integer(readLines(file("stdin"), 1))
+   print("Specify a ending tuning value")
+   end_tuning <- as.integer(readLines(file("stdin"), 1))
+
+   X11()
+   if (estMethod == 'hist') {
+      h <- hist(x, breaks = start_tuning, plot = FALSE)
+      df <- as.data.frame(cbind(ds = start_tuning, xs = h$mids, ys = h$counts))
+
+      for (i in start_tuning+1:end_tuning) {
+        h2 <- hist(x, breaks = i, plot = FALSE)
+        df2 <- as.data.frame(cbind(ds = i, xs = h2$mids, ys = h2$counts))
+        df <- rbind(df, df2)
+        df <- as.data.frame(df)
+      }
+      plot <- ggplot(data=df, aes(x=xs, y=ys)) +  
+              geom_bar(stat="identity") + 
+              transition_states(ds)
+      show(plot)    
+   }
+   else {
+      d1 <- density(x, bw =  start_tuning)
+      d2 <- density(x, bw = end_tuning)
+      df1 <- as.data.frame(cbind(ds = 1, xs = d1$x, ys = d1$y * d1$n))
+      df2 <- as.data.frame(cbind(ds = 2, xs = d2$x, ys = d2$y * d2$n))
+      m <- merge(x = df1, y = df2, all = TRUE)
+      plot <- ggplot(m, aes(x = xs, y = ys)) + 
+              geom_line() + 
+              transition_states(ds)
+      show(plot)
+   }
+}
+
+## returns boolean based on if vec args is greater than start, less than end
+subset <- function(vec,start,end) 
+{
+   if (vec >= start & vec <= end) return(TRUE) else return(FALSE)
+}
+
+getSubset <- Vectorize(subset)
+
+## grabs subset of graph and returns it
+zoomIn <- function(x, subsetX) {
+   valid_index <- 0
+   while(valid_index == 0)
+   {
+      print(paste("Specify a subset of graph between",range(subsetX)[1],
+      "and",range(subsetX)[2]))
+      print("Starting value")
+      start_index <- as.integer(readLines(file("stdin"), 1))
+      if (start_index <= range(subsetX)[1])
+      {
+         print("Invalid. Starting value should be larger.")
+         next
+      }
+      print("Ending value")
+      end_index <- as.integer(readLines(file("stdin"), 1))
+      if(end_index >= range(subsetX)[2])
+      {
+         print("Invalid. Ending value should be smaller.")
+         next
+      }
+      if(end_index == start_index)
+      {
+         cat("Invalid range. Max value cannot be the same as min value. Please reenter indices.\n")
+         next
+      }
+      else if (end_index < start_index)
+      {
+         cat("Invalid range. Max value cannot be smaller than min value. Please reenter indices.\n")
+         next
+      }
+      valid_index <- 1
+   }
+   ## display graph of subset
+   return(x[getSubset(x,start_index,end_index)])
+}
+
+## handles zooming out graph
+zoomOut <- function(x, subsetX) 
+{
+   if(range(x)[1] == range(subsetX[1]) && range(x)[2] == range(subsetX)[2])
+   {
+      print("Cannot zoom out. Graph is in original state.")
+      return(x)
+   }
+   else
+   {
+      print("Do you want to zoom out to original graph? [y/n]")
+      response <- readLines(file("stdin"),1)
+      if (response == "y" || response == "Y") 
+      {
+         return(x)
+      }
+      else if (response == "n" || response == "N") 
+      {
+         valid_index <- 0
+         while (valid_index == 0)
+         {
+            print(paste("Specify a subset of graph between",range(x)[1],
+            "and",range(x)[2]))
+            print("Start index")
+            start_index <- as.integer(readLines(file("stdin"), 1))
+            if (start_index >= range(subsetX)[1]) 
+            {
+               print("Invalid. Starting index should be smaller.")
+               next
+            }
+            print("End index")
+            end_index <- as.integer(readLines(file("stdin"), 1))
+            if (end_index <= range(subsetX)[2])
+            {
+               print("Invalid. Ending index should be larger.")
+               next
+            }
+            if(end_index == start_index)
+            {
+               cat("Invalid range. Max value cannot be the same as min value. Please reenter indices.\n")
+               next
+            }
+            else if (end_index < start_index)
+            {
+               cat("Invalid range. Max value cannot be smaller than min value. Please reenter indices.\n")
+               next
+            }
+         valid_index <- 1
+         }
+         ## display graph of subset
+         return(x[getSubset(x,start_index,end_index)])
+      }
+   }
+}
+
+## grabs and returns new tuning paremeter from user. Validates input before
+## returning.
+getNewTuningParameter <- function() {
+   while(TRUE) {
+      print("Provide a new tuning paremeter")
+      tuning <- as.integer(readLines(file("stdin"), 1))
+      if (is.na(tuning) || tuning < 1) {
+         print("Tuning must be a non-negative integer")
+      }
+      else {
+         return(tuning)
+      }
+   }
+}
+
+## Grab user input to see what action they want to do. Returns integer that 
+## corresponds with requested action. Input guaranteed to be valid, as function
+## will validate input and ask user until valid input provided.
+grabUserRequest <- function() {
+   while(TRUE) {
+      print("What do you want to do?")
+      print("(1) Change tuning parameter")
+      print("(2) Zoom in on graph")
+      print("(3) Zoom out of graph")
+      print("(4) Run an animation on the currently selected list")
+      print("(5) Quit and specify which graphs you want to save.")
+      print("(6) See graph again.")
+      input <- readLines(file("stdin"), 1)
+
+      if (is.na(as.integer(input)) || as.integer(input) < 1 ||
+          as.integer(input) > 6) {
+         print("Invalid choice...")
+      }
+      else {
+         return(as.integer(input))
+      }
+   }
+}
+
+## Used to explore potential curves of a dataset, allowing for iterative testing
+## by the user. Will save graphs that user wants.
+##
+## Args:
+## x (Vector): numeric vector to be graphed
+## estMethod (string): Type of method. Should be 'hist' or 'density'
+## tuning: breaks or bw, based on estMethod
+exploreShape <- function(x,estMethod,tuning,twoAtATime) {
+   ## subset of graph we are graphing. Be default is the entire graph
+   subsetX <- x   
+
+   while (TRUE) {
+      ## Allow user to view plot until they close the window
+      X11()
+      print("Displaying graph...")
+      if (estMethod == 'hist') {
+         graph <<- hist(subsetX, breaks = tuning) # global instance allows overlays
+         plot(graph)
+      }
+      else {
+         graph <<- density(subsetX, bw = tuning)
+         plot(graph)
+      }
       
-      # THIS (1) WORKS BUT MESSED UP WITH THE OLD PLOT NUMBERS
-      if (userInput == '1') {
-        newTuning <- changeTuning()
-        oldTuning <- tuning
-        
-        if (estMethod == 'density') {
-          lines(density(x,bw=oldTuning),add=TRUE)
-        }
-        if (estMethod == 'hist') {
-          lines(hist(x,breaks=oldTuning),add=TRUE)
-        }
-        
-        par(new=TRUE)
-        exploreShape(x, estMethod, newTuning, twoAtATime)
+      ## once closed, see what the user want to do
+      input <- grabUserRequest()
+      graphics.off() 
+      if (input == 1) {
+         tuning <- getNewTuningParameter()
+
+         ## handle plotting overlays
+         if (twoAtATime) {
+            overlayGraphs(subsetX, estMethod, graph, tuning)  
+         }
       }
-      # Case 2:
-      else if (userInput == '2') {
-        oldX <<- x
-        zoomed_in_x <<- zoomIn(x)
-        exploreShape(zoomed_in_x, estMethod, tuning, twoAtATime)
+      else if (input == 2) {
+         subsetX <- zoomIn(x, subsetX)
       }
-      # Case 3:
-      else if (userInput == '3') {
-        zoomed_out_x <<- zoomOut(oldX, zoomed_in_x)
-        exploreShape(zoomed_out_x, estMethod, tuning, twoAtATime)
+      else if (input == 3) {
+         subsetX <- zoomOut(x, subsetX)       
       }
-      # Case 4:
-      else if (userInput == '4') {
-        # runAnimation()
+      else if (input == 4) {
+         runAnimation(x, estMethod)
+         while (!is.null(dev.list())) Sys.sleep(1)
       }
-      
-      else if (userInput == '5') {
-        quitSave()
+      else if (input == "5") {
+         return(getFinalGraphs(x, estMethod));
       }
-    }
-  }
+      else if (input == 6) {
+         next
+      }
+   }
 }
+
+obj <- exploreShape(c(1:100), 'density', 5, TRUE)
+
+summary(obj)
