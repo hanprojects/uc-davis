@@ -14,6 +14,8 @@ This is the repository for all of the prjects for UC Davis Computer Science cour
 
 ## Mentioned UC Davis Courses
 ECS 145: Scripting Languages
+ECS 170: Machine Learning
+ECS 171: Artificial Intelligence
 
 ## Dedication 
 I dedicate this hard work commitment to my mother and my love Tang Minshan.
