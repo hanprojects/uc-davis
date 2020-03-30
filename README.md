@@ -13,12 +13,13 @@
 This is the repository for all of the prjects for UC Davis Computer Science courses. This is ONLY for educational purposes, NOT for research reference. 
 
 ## Mentioned UC Davis Courses
+```bash
 ECS 120: Theory of Computation
 ECS 122A: Algorithm Analysis and Design
 ECS 145: Scripting Languages
 ECS 170: Machine Learning
 ECS 171: Artificial Intelligence
-
+```
 ## Dedication 
 I dedicate this hard work commitment to my mother and my love Tang Minshan.
 
