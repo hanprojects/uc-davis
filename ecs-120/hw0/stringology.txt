@@ -1,0 +1,10 @@
+{ "crcr", "crdcd", "dcdcr", "dcddcd" }
+{ "crcrr", "crrcr", "dcdcrr", "dcdrcr" }
+{ "", "cr", "dcd", "crcr", "crdcd", "dcdcr", "crcrcr", "dcddcd" }
+{ ("cr","crr"), ("cr","rcr"), ("dcd","crr"), ("dcd","rcr") }
+{ "cr", "crr", "dcd", "rcr" }
+{ "crcr", "crdcd", "dcdcr", "crrcrr", "crrrcr", "dcddcd", "rcrcrr", "rcrrcr" }
+{ "crcr", "crcrr", "crdcd", "crrcr", "crrcrr", "crrdcd", "crrrcr", "dcdcr", "dcdcrr", "dcddcd", "dcdrcr", "rcrcr", "rcrcrr", "rcrdcd", "rcrrcr" }
+( "cc", "cd", "cr", "dc", "dd", "dr", "rc", "rd", "rr" )
+( "ccdd", "dcdr", "dddd", "rdrc", "rdrd", "ccrcc", "cdddrc", "ddrrrr" )
+{ "ccdd", "dcdr", "dddd", "rdrc", "rdrd", "ccrc", "crcc", "cddd", "dddr", "ddrc", "ddrr", "drrr", "rrrr" }
