@@ -1,0 +1,33 @@
+// DFA recognizing { x in {0,1}* | x does not end in 000 }
+
+states = {a,         
+          b,        
+          c,      
+          d,
+          e,
+          f,
+          g}
+
+input_alphabet = {0,1}
+
+// no last bit when we start
+start_state =    a
+
+
+accept_states =  {d}
+
+delta =
+    a,0 -> b; 
+    a,1 -> g;
+    b,0 -> g;
+    b,1 -> c;
+    c,0 -> d;
+    c,1 -> f;
+    d,0 -> d;
+    d,1 -> e;
+    e,0 -> d;
+    e,1 -> e;
+    f,0 -> f;
+    f,1 -> g;
+    g,0 -> g;
+    g,1 -> f;
