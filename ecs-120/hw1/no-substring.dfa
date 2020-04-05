@@ -1,0 +1,33 @@
+// DFA recognizing { x in {0,1}* | x does not end in 000 }
+
+states = {a,         
+          b,        
+          c,      
+          d,
+          e}
+
+input_alphabet = {a,b,c}
+
+start_state =    a
+
+accept_states =  {a,b,c,d}
+
+delta =
+    // Rejection
+    a,a -> b;
+    b,c -> c;
+    c,a -> d; 
+    d,b -> e;
+    e,a -> e;
+    e,b -> e;
+    e,c -> e;
+    
+    // Acceptance: 
+    a,b -> a;
+    a,c -> a;
+    b,a -> b;
+    b,b -> a;
+    c,b -> a;
+    c,c -> a;
+    d,a -> b;
+    d,c -> c;
