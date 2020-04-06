@@ -1,0 +1,23 @@
+states = {m0,         
+          m1,        
+          m2,
+          m3,
+          m4}
+
+input_alphabet = {0,1}
+
+start_state =    m0
+
+accept_states =  {m3}
+
+delta =
+    m0,0 -> m0;
+    m0,1 -> m1;
+    m1,0 -> m2;
+    m1,1 -> m3; 
+    m2,0 -> m4; 
+    m2,1 -> m0;
+    m3,0 -> m1; 
+    m3,1 -> m2; 
+    m4,0 -> m3;
+    m4,1 -> m4; 
