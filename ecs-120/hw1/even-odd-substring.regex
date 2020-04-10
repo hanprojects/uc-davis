@@ -1,0 +1,5 @@
+x = (a|b)*;
+y = (b|ab*ab*)*;
+z = a*(ba*ba*)*ba*;
+
+y | z | x babb x + x aabaa x | x aabaa x + x babb x
