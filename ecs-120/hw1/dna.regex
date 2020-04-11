@@ -1,0 +1,5 @@
+dna = (A|C|G|T);
+
+violate = dna | (A|T)dna*(A|T) | (A|T)dna*(G|C) | (G|C)dna*(A|T) | dna(G|C)(G|C)dna*(G|C)(G|C)dna | dna(G|C)(A|T)dna*(G|C)(G|C)dna | dna(A|T)(G|C)dna*(G|C)(G|C)dna | dna(A|T)(A|T)dna*(G|C)(G|C)dna | dna(G|C)(G|C)dna*(A|T)(A|T)dna | dna*CC | CCdna* | dna*Cdna*Cdna* | dna*GGGGdna* | GGGGdna* | dna*GGGG;
+
+violate
