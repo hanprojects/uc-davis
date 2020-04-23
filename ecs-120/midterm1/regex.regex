@@ -1,0 +1,5 @@
+x = (a|b);
+
+accept = x(a)x*(a) | x(b)x*(b);
+
+accept
