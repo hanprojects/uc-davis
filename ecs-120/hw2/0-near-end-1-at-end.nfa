@@ -1,0 +1,27 @@
+states = {s,a,b,c,d,e,f,g,h,i}
+input_alphabet = {0,1}
+start_state = s
+accept_states = {b,i}
+
+delta =
+    // Case x[|x|] = 1
+    s, -> a; 
+    a, 0 -> a;
+    a, 1 -> a;
+    a, 1 -> b;
+   
+    // Case x[|x|-5] = x[|x|-2] = 0
+    s, -> c;
+    c, 0 -> d;
+    f, 0 -> g;
+    
+    c, 0 -> c;
+    c, 1 -> c;
+    d, 0 -> e;
+    d, 1 -> e;
+    e, 0 -> f;
+    e, 1 -> f;
+    g, 0 -> h;
+    g, 1 -> h;
+    h, 0 -> i;
+    h, 1 -> i;
