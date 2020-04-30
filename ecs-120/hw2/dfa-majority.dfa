@@ -1,0 +1,91 @@
+states = {adg, adh, adi, aeg, aeh, aei, afg, afh, afi, bdg, bdh, bdi, beg, beh, bei, bfg, bfh, bfi, cdg, cdh, cdi, ceg, ceh, cei, cfg, cfh, cfi}
+
+input_alphabet = {0,1}
+
+start_state = aeg
+
+accept_states = {adg, adh, adi, cdg, cdh, cdi, aeh, afh, ceh, cfh, bdh}
+
+delta =
+// adg, adh, adi, aeg, aeh, aei, afg, afh, afi
+    adg, 0 -> ceh;
+    adg, 1 -> bdh;
+    
+    adh, 0 -> cei;
+    adh, 1 -> bdh;
+    
+    adi, 0 -> ceh;
+    adi, 1 -> bdg;
+    
+    aeg, 0 -> ceh;
+    aeg, 1 -> bfh;
+    
+    aeh, 0 -> cei;
+    aeh, 1 -> bfh;
+    
+    aei, 0 -> ceh;
+    aei, 1 -> bfg;
+    
+    afg, 0 -> cfh;
+    afg, 1 -> bfh;
+    
+    afh, 0 -> cfi;
+    afh, 1 -> bfh;
+    afi, 0 -> cfh;
+    afi, 1 -> bfg;
+    
+// bdg, bdh, bdi, beg, beh, bei, bfg, bfh, bfi
+    bdg, 0 -> ceh;
+    bdg, 1 -> cdh;
+    
+    bdh, 0 -> cei;
+    bdh, 1 -> cdh;
+    
+    bdi, 0 -> ceh;
+    bdi, 1 -> cdg;
+    
+    beg, 0 -> ceh;
+    beg, 1 -> cfh;
+    
+    beh, 0 -> cei;
+    beh, 1 -> cfh;
+    
+    bei, 0 -> ceh;
+    bei, 1 -> cfg;
+    
+    bfg, 0 -> cfh;
+    bfg, 1 -> cfh;
+    
+    bfh, 0 -> cfi;
+    bfh, 1 -> cfh;
+    
+    bfi, 0 -> cfh;
+    bfi, 1 -> cfg;
+    
+// cdg, cdh, cdi, ceg, ceh, cei, cfg, cfh, cfi
+    cdg, 0 -> ceh;
+    cdg, 1 -> cdh;
+    
+    cdh, 0 -> cei;
+    cdh, 1 -> cdh;
+    
+    cdi, 0 -> ceh;
+    cdi, 1 -> cdg;
+    
+    ceg, 0 -> ceh;
+    ceg, 1 -> cfh;
+    
+    ceh, 0 -> cei;
+    ceh, 1 -> cfh;
+    
+    cei, 0 -> ceh;
+    cei, 1 -> cfg;
+    
+    cfg, 0 -> cfh;
+    cfg, 1 -> cfh;
+    
+    cfh, 0 -> cfi;
+    cfh, 1 -> cfh;
+    
+    cfi, 0 -> cfh;
+    cfi, 1 -> cfg;
