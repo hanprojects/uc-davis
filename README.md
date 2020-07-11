@@ -17,6 +17,7 @@ This is the repository for all of the prjects for UC Davis Computer Science cour
 ECS 120: Theory of Computation
 ECS 122A: Algorithm Analysis and Design
 ECS 145: Scripting Languages
+ECS 154A: Computer Architecture
 ECS 170: Machine Learning
 ECS 171: Artificial Intelligence
 ```
