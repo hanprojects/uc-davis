@@ -15,7 +15,7 @@ This is the repository for all of the prjects for UC Davis Computer Science cour
 ## Mentioned UC Davis Courses
 ```bash
 ECS 120: Theory of Computation
-ECS 122A: Algorithm Analysis and Design
+ECS 122AB: Algorithm Analysis and Design (I, II)
 ECS 145: Scripting Languages
 ECS 154A: Computer Architecture
 ECS 170: Machine Learning
