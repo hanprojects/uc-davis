@@ -1,0 +1,745 @@
+---
+title: <center> ECS 132 Fall 2020, Project</center>
+header-includes:
+- \usepackage{tikz}
+- \usepackage{amsmath}
+- \usepackage{graphicx}
+- \usepackage{fancyhdr}
+- \usepackage{geometry}
+- \usepackage{float}
+- \usepackage{xcolor}
+date: "<center> December 1, 2020 </center>"
+output:
+  pdf_document:
+    toc: no
+    toc_depth: '3'
+    highlight: tango
+    number_sections: yes
+  html_document:
+    
+    highlight: tango
+    number_sections: yes
+    theme: united
+    toc: no
+    toc_depth: 3
+    pandoc_args:
+    - --number-sections
+    - --number-offset=2
+---
+
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Project}
+\lhead{ECS 132 Fall 2020}
+\rfoot{Page \thepage}
+
+<!-- regular html comment --> 
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Your name:   Han Nguyen #917278789 {-}
+
+## Partner's name:   Zibo Zhang #914913319 {-}
+
+## Any other collaborator(s):   N/A {-}
+
+
+# Instructions {-}
+
+1. Please refer to "ECS_132_Project.pdf" for details.
+
+2. You may in no circumstances upload your project to private tutoring websites such as CourseHero or Chegg. Remember all material related to this course  is a property of the University of California and posting them is a violation of the copyright laws. 
+    
+3. If you refer to a source (either a book or the internet), you must cite it.
+    
+4. You may work in groups of size of at most 2. If you collaborate with others,  you must list their names.
+    
+5. Write your answers in R Markdown and submit the knitted pdf on Gradescope; for due date and other details see the Homework Policy and Schedule.
+
+\setcounter{section}{2}
+# Design
+
+## 
+
+Alice and Bob decide to use the following modulation scheme to map the bits to the inter-packet delay. A delay of $0.25$ is used to encode a bit $0$ and delay of $0.75$ is used to encode a bit $1$. Write a short R code  that will generate the modified packet stream that contains the secret message.
+
+## Answer {-}
+```{r }
+## Read data from .csv file
+data = read.csv("Traffic_data_orig.csv", header=TRUE)
+
+## Get message information
+secret_message = "this is a secret message"
+message_length = nchar(secret_message)
+message_bits = as.integer(rawToBits((charToRaw(secret_message))))
+
+## Get lists for delay times, inter packet delays (in total) and covert packet stream
+delay_times = numeric(message_length * 8)
+inter_packet_delays = numeric(length(data$Time) - 1)
+covert_packet_stream = numeric(length(data$Time) - 1)
+
+## Get delay times by message bits
+curr_index = 1
+
+for (i in 0:(message_length-1))
+{
+  for (j in 1:8) 
+  {
+    if (message_bits[i*8+j] == 0)
+    {
+      delay_times[curr_index] = 0.25
+    }
+    else
+    {
+      delay_times[curr_index] = 0.75
+    }
+    
+    curr_index = curr_index + 1
+    j = j - 1
+  }
+}
+# print(delay_times)
+
+## Get inter packet delay times
+for (i in (1:(length(data$Time) - 1)))
+{
+  inter_packet_delays[i] = data$Time[i+1] - data$Time[i]
+}
+# print(inter_packet_delays)
+
+## Get covert packet stream
+covert_packet_stream = inter_packet_delays
+
+for (i in 1:(message_length*8))
+{
+  covert_packet_stream[i] = delay_times[i]
+}
+
+## DISPLAY THE COVERT PACKET STREAM
+print(covert_packet_stream)
+```
+
+## 
+
+Plot the histogram of the inter-packet delays of the overt packet stream. Plot the histogram of the covert packet stream. Will Eve be suspicious?
+
+## Answer {-}
+
+```{r }
+## Read data from .csv file
+data = read.csv("Traffic_data_orig.csv", header=TRUE)
+
+## Get message information
+secret_message = "this is a secret message"
+message_length = nchar(secret_message)
+message_bits = as.integer(rawToBits((charToRaw(secret_message))))
+
+## Get lists for delay times, inter packet delays (in total) and covert packet stream
+delay_times = numeric(message_length * 8)
+inter_packet_delays = numeric(length(data$Time) - 1)
+covert_packet_stream = numeric(length(data$Time) - 1)
+
+## Get inter packet delay times
+for (i in (1:(length(data$Time) - 1)))
+{
+  inter_packet_delays[i] = data$Time[i+1] - data$Time[i]
+}
+
+## Get delay times by message bits
+curr_index = 1
+
+for (i in 0:(message_length-1))
+{
+  for (j in 1:8) 
+  {
+    if (message_bits[i*8+j] == 0)
+    {
+      delay_times[curr_index] = 0.25
+    }
+    else
+    {
+      delay_times[curr_index] = 0.75
+    }
+    
+    curr_index = curr_index + 1
+    j = j - 1
+  }
+}
+# print(delay_times)
+
+## Get covert packet stream
+covert_packet_stream = inter_packet_delays
+
+for (i in 1:(message_length*8))
+{
+  covert_packet_stream[i] = delay_times[i]
+}
+
+## PLOT HISTORGRAMS OF INTER PACKET DELAYS & COVERT PACKET STREAM
+par(mfrow=c(2,1))
+hist(inter_packet_delays, main="Inter Packet Delays", xlab="Delay")
+hist(covert_packet_stream, main="Covert Packet Stream", xlab="Delay")
+```
+
+<!-- text comments here -->
+From the two histograms, we think that Eve will be suspicious since the trend of the distribution between two histograms is NOT similar with each other. Also, compared to the original overt packet stream, the covert packet stream has produced higher packet number within a unit of delay time.
+
+## 
+
+Alice and Bob decide to use the following modulation scheme. Let $m$, $min$, and $max$ denote the median, min, and max of the inter-packet delay of the overt packet stream. If Alice needs to send a $0$ she randomly generates a delay between $min$ and $m$. If she want to send a $1$ she randomly generates a delay between $m$ and $max$. First, compute $m$, $min$,  and $max$. Next, modify the code  in  Question 1, to generate  the packet stream that contains  the secret message.
+
+
+## Answer {-}
+
+```{r }
+## Read data from .csv file
+data = read.csv("Traffic_data_orig.csv", header=TRUE)
+
+## Get message information
+secret_message = "this is a secret message"
+message_length = nchar(secret_message)
+message_bits = as.integer(rawToBits((charToRaw(secret_message))))
+
+## Get lists for delay times, inter packet delays (in total) and covert packet stream
+delay_times = numeric(message_length * 8)
+inter_packet_delays = numeric(length(data$Time) - 1)
+covert_packet_stream = numeric(length(data$Time) - 1)
+
+## Get inter packet delay times
+for (i in (1:(length(data$Time) - 1)))
+{
+  inter_packet_delays[i] = data$Time[i+1] - data$Time[i]
+}
+# print(inter_packet_delays)
+
+## Get median, min, max of the inter packet delays
+min = min(inter_packet_delays)
+m = median(inter_packet_delays)
+max = max(inter_packet_delays)
+
+## Get delay times by message bits
+curr_index = 1
+
+for (i in 0:(message_length-1))
+{
+  for (j in 1:8) 
+  {
+    if (message_bits[i*8+j] == 0)
+    {
+      delay_times[curr_index] = runif(1, min, m)
+    }
+    else
+    {
+      delay_times[curr_index] = runif(1, m, max)
+    }
+    
+    curr_index = curr_index + 1
+    j = j - 1
+  }
+}
+# print(delay_times)
+
+## Get covert packet stream
+updated_covert_packet_stream = inter_packet_delays
+
+for (i in 1:(message_length*8))
+{
+  updated_covert_packet_stream[i] = delay_times[i]
+}
+
+## DISPLAY THE COVERT PACKET STREAM
+print(updated_covert_packet_stream)
+```
+
+
+
+## 
+
+Plot the histogram  of the inter-packet  delays of the overt packet stream and that of the new covert packet stream. Do you think Eve will be suspicious?
+  
+## Answer {-}
+
+```{r }
+## Read data from .csv file
+data = read.csv("Traffic_data_orig.csv", header=TRUE)
+
+## Get message information
+secret_message = "this is a secret message"
+message_length = nchar(secret_message)
+message_bits = as.integer(rawToBits((charToRaw(secret_message))))
+
+## Get lists for delay times, inter packet delays (in total) and covert packet stream
+delay_times = numeric(message_length * 8)
+inter_packet_delays = numeric(length(data$Time) - 1)
+covert_packet_stream = numeric(length(data$Time) - 1)
+
+## Get inter packet delay times
+for (i in (1:(length(data$Time) - 1)))
+{
+  inter_packet_delays[i] = data$Time[i+1] - data$Time[i]
+}
+# print(inter_packet_delays)
+
+## Get median, min, max of the inter packet delays
+min = min(inter_packet_delays)
+m = median(inter_packet_delays)
+max = max(inter_packet_delays)
+
+## Get delay times by message bits
+curr_index = 1
+
+for (i in 0:(message_length-1))
+{
+  for (j in 1:8) 
+  {
+    if (message_bits[i*8+j] == 0)
+    {
+      delay_times[curr_index] = runif(1, min, m)
+    }
+    else
+    {
+      delay_times[curr_index] = runif(1, m, max)
+    }
+    
+    curr_index = curr_index + 1
+    j = j - 1
+  }
+}
+# print(delay_times)
+
+## Get covert packet stream
+updated_covert_packet_stream = inter_packet_delays
+
+for (i in 1:(message_length*8))
+{
+  updated_covert_packet_stream[i] = delay_times[i]
+}
+# print(updated_covert_packet_stream)
+
+par(mfrow=c(2,1))
+hist(inter_packet_delays, main="Inter Packet Delays", xlab="Delay")
+hist(updated_covert_packet_stream, main="Updated Covert Packet Stream", xlab="Delay")
+```
+
+<!-- text comments here -->
+At this time, we believe that Eve might not be suspicious anymore, since the trend of the distribution of the two histograms is VERY similar with each other. The number of packets by each unit of delay time is also similar as well.
+
+##  
+
+Answer the following questions briefly (in 1 or 2 sentences)
+
+1. How can you improve upon the method in Question 3? 
+
+   \textbf{Answer: } In my opinion, by using `runif()`, we should reach the most prominent method to generate a new packet stream via finding the median, min and max of the inter-packet delays. At first, I would like to use `sample()`, but `sample()` is a method of generating the data inclusively, and it does not collect data from non-discrete (continuous) data sets. 
+
+2. We assumed the Alice will buffer up the packets and we mentioned that it was unrealistic. Why?
+ 
+   \textbf{Answer: } By buffering up the packets, Alice needs to ensure that the packets would be transmitted at the same rate that they arrive. However, since the packet stream is not following a constant rate (as shown in printing the data set or histograms), it will be unrealistic for Alice to do so (Source: Stanford University, link below).
+
+3. We have assumed that the network does not alter the inter-packet delays. What would be the problem if it did? Can you suggest methods to mitigate the effect of the changes of the inter-packet delay (noise)?
+
+   \textbf{Answer: } If the network altered the inter-packet delays, the output data of covert packet stream should be totally different from the original dataset, making the detection of a third person like Eve will be more difficult since the differences made by such constant alterations would always exist. We can address the problem by designing the network upon the average inter-packet delay everytime when the delay times get altered to ensure the adaptation of the data every time they change.
+
+
+# Implementation
+
+
+## 
+For  buffer size $B=20$ we want to find out the probability of overflow  and  underflow, when the IPD follows the Exponential with $\lambda =1$ pkts/sec and $i=2, 6, 10, 14, 18$. Use message size $m = 16, 32$ bits. Tabulate the results. Remember that to determine the probability you need to run multiple (say 500) experiments for each parameter, i.e., for $B = 20, m = 16, i = 2$ run $500$ experiments  and determine the probability of overflow and underflow. Similarly for other values of $i$ and $m$.
+
+## Answer {-}
+
+
+```{r }
+#  your R simulation code here 
+i = c(2, 6, 10, 14, 18)
+m = c(16, 32)
+B = 20
+sample_num = 500
+lambda = 1
+
+## Get random bits size of m for the secret message
+get_random_secret_message_bits = function(m)
+{
+  message_bits = numeric(m)
+  
+  for (i in 1:m)
+  {
+    message_bits[i] = sample(c(0,1), 1)
+  }
+  
+  return(message_bits)
+}
+
+## Get time for each packet source generation using IPD distribution
+get_packet_times = function(idp, worst_case)
+{
+  packet_times = numeric(worst_case)
+  
+  for (i in 1:worst_case)
+  {
+    if (i == 1)
+    {
+      packet_times[i] = 0
+    }
+    
+    else
+    {
+      packet_times[i] = packet_times[i-1] + idp[i-1]
+    }
+  }
+  
+  return(packet_times)
+}
+
+## Get overflow and underflow of the packet stream under IPD distribution
+get_overflow_underflow = function(m, i)
+{
+  curr_buffer = i
+  message_bits = get_random_secret_message_bits(m)
+  
+  worst_case = 49
+  
+  idp_expo = rexp(worst_case, lambda)
+  packet_times = get_packet_times(idp_expo, worst_case+1)
+  next_sent_time = packet_times[i]
+  
+  sender_delay = rexp(worst_case, lambda)
+  med = median(sender_delay)
+  min = min(sender_delay)
+  max = max(sender_delay)
+  message_bit_delay = rexp(worst_case, lambda)
+  
+  underflow = 0
+  overflow = 0
+  
+  next_buffer = i+1
+  
+  for (j in 1:m)
+  {
+    if (message_bits[j] == 0)
+    {
+      delay = runif(1, min, med)
+      message_bit_delay[j] = delay
+    }
+    
+    else if (message_bits[j] == 1)
+    {
+      delay = runif(1, med, max)
+      message_bit_delay[j] = delay
+    }
+    
+    next_sent_time = next_sent_time + delay
+    
+    # Update buffer
+    if (next_sent_time <= packet_times[next_buffer])
+    {
+      curr_buffer = curr_buffer - 1
+      
+      if (curr_buffer < 1)
+      {
+        underflow = 1
+        break
+      }
+    }
+    
+    else
+    {
+      curr_buffer = curr_buffer + 1
+      
+      if (curr_buffer > B)
+      {
+        overflow = 1
+        break
+      }
+    }
+    
+    next_buffer = next_buffer + 1
+  }
+  
+  return(c(overflow, underflow))
+}
+
+## Get results of overflow-underflow probabilities
+get_prob_results = function(m, i)
+{
+  overflow_probs = numeric(sample_num)
+  underflow_probs = numeric(sample_num)
+  
+  sample_count = 1
+  
+  for (j in 1:sample_num)
+  {
+    overflow = 0
+    underflow = 0
+    over_under = get_overflow_underflow(m, i)
+    
+    # Update overflow and underflow
+    overflow = overflow + over_under[1]
+    underflow = underflow + over_under[2]
+    
+    overflow_probs[j] = overflow/sample_count
+    underflow_probs[j] = underflow/sample_count
+    
+    sample_count = sample_count + 1
+  }
+  
+  return(c(mean(overflow_probs), mean(underflow_probs)))
+}
+
+# tabulate results and compute the probabilities
+
+## GET PROBABILITIES OF OVERFLOW-UNDERFLOW of EACH BIT AND BUFFER
+prob_16_2 = get_prob_results(16,2)
+prob_16_6 = get_prob_results(16,6)
+prob_16_10 = get_prob_results(16,10)
+prob_16_14 = get_prob_results(16,14)
+prob_16_18 = get_prob_results(16,18)
+prob_32_2 = get_prob_results(32,2)
+prob_32_6 = get_prob_results(32,6)
+prob_32_10 = get_prob_results(32,10)
+prob_32_14 = get_prob_results(32,14)
+prob_32_18 = get_prob_results(32,18)
+
+## GET TABLE OF OVERFLOW PROBABILITIES
+table_overflow = matrix(list(), nrow = 2, ncol = 5)
+table_overflow[1, 1] = prob_16_2[1]
+table_overflow[1, 2] = prob_16_6[1]
+table_overflow[1, 3] = prob_16_10[1]
+table_overflow[1, 4] = prob_16_14[1]
+table_overflow[1, 5] = prob_16_18[1]
+table_overflow[2, 1] = prob_32_2[1]
+table_overflow[2, 2] = prob_32_6[1]
+table_overflow[2, 3] = prob_32_10[1]
+table_overflow[2, 4] = prob_32_14[1]
+table_overflow[2, 5] = prob_32_18[1]
+print(table_overflow)
+
+## GET TABLE OF UNDERFLOW PROBABILITIES
+table_underflow = matrix(list(), nrow = 2, ncol = 5)
+table_underflow[1, 1] = prob_16_2[2]
+table_underflow[1, 2] = prob_16_6[2]
+table_underflow[1, 3] = prob_16_10[2]
+table_underflow[1, 4] = prob_16_14[2]
+table_underflow[1, 5] = prob_16_18[2]
+table_underflow[2, 1] = prob_32_2[2]
+table_underflow[2, 2] = prob_32_6[2]
+table_underflow[2, 3] = prob_32_10[2]
+table_underflow[2, 4] = prob_32_14[2]
+table_underflow[2, 5] = prob_32_18[2]
+print(table_underflow)
+```
+
+## 
+For  buffer size $B=20$ we want to find out the probability of overflow  and  underflow, when the IPD follows the Uniform distribution in the range (0,1)  and $i=2, 6, 10, 14, 18$. Use message size $m = 16, 32$ bits.  Tabulate the results. Remember that to determine the probability you need to run multiple (say 500) experiments for each parameter, i.e., for $B = 20, m = 16, i = 2$ run $500$ experiments  and determine the probability of overflow and underflow. Similarly for other values of $i$ and $m$.
+
+## Answer {-}
+
+
+```{r }
+#  your R simulation code here 
+i = c(2, 6, 10, 14, 18)
+m = c(16, 32)
+B = 20
+sample_num = 500
+lambda = 1
+
+## Get random bits size of m for the secret message
+get_random_secret_message_bits = function(m)
+{
+  message_bits = numeric(m)
+  
+  for (i in 1:m)
+  {
+    message_bits[i] = sample(c(0,1), 1)
+  }
+  
+  return(message_bits)
+}
+
+## Get time for each packet source generation using IPD distribution
+get_packet_times = function(idp, worst_case)
+{
+  packet_times = numeric(worst_case)
+  
+  for (i in 1:worst_case)
+  {
+    if (i == 1)
+    {
+      packet_times[i] = 0
+    }
+    
+    else
+    {
+      packet_times[i] = packet_times[i-1] + idp[i-1]
+    }
+  }
+  
+  return(packet_times)
+}
+
+## Get overflow and underflow of the packet stream under IPD distribution
+get_overflow_underflow = function(m, i)
+{
+  curr_buffer = i
+  message_bits = get_random_secret_message_bits(m)
+  
+  worst_case = 49
+  
+  idp_expo = runif(worst_case, min = 0, max = 1)
+  packet_times = get_packet_times(idp_expo, worst_case+1)
+  next_sent_time = packet_times[i]
+  
+  sender_delay = runif(worst_case, min = 0, max = 1)
+  med = median(sender_delay)
+  min = min(sender_delay)
+  max = max(sender_delay)
+  message_bit_delay = rexp(worst_case, lambda)
+  
+  underflow = 0
+  overflow = 0
+  
+  next_buffer = i+1
+  
+  for (j in 1:m)
+  {
+    if (message_bits[j] == 0)
+    {
+      delay = runif(1, min, med)
+      message_bit_delay[j] = delay
+    }
+    
+    else if (message_bits[j] == 1)
+    {
+      delay = runif(1, med, max)
+      message_bit_delay[j] = delay
+    }
+    
+    next_sent_time = next_sent_time + delay
+    
+    # Update buffer
+    if (next_sent_time <= packet_times[next_buffer])
+    {
+      curr_buffer = curr_buffer - 1
+      
+      if (curr_buffer < 1)
+      {
+        underflow = 1
+        break
+      }
+    }
+    
+    else
+    {
+      curr_buffer = curr_buffer + 1
+      
+      if (curr_buffer > B)
+      {
+        overflow = 1
+        break
+      }
+    }
+    
+    next_buffer = next_buffer + 1
+  }
+  
+  return(c(overflow, underflow))
+}
+
+## Get results of overflow-underflow probabilities
+get_prob_results = function(m, i)
+{
+  overflow_probs = numeric(sample_num)
+  underflow_probs = numeric(sample_num)
+  
+  sample_count = 1
+  
+  for (j in 1:sample_num)
+  {
+    overflow = 0
+    underflow = 0
+    over_under = get_overflow_underflow(m, i)
+    
+    # Update overflow and underflow
+    overflow = overflow + over_under[1]
+    underflow = underflow + over_under[2]
+    
+    overflow_probs[j] = overflow/sample_count
+    underflow_probs[j] = underflow/sample_count
+    
+    sample_count = sample_count + 1
+  }
+  
+  return(c(mean(overflow_probs), mean(underflow_probs)))
+}
+
+# tabulate results and compute the probabilities
+
+## GET PROBABILITIES OF OVERFLOW-UNDERFLOW of EACH BIT AND BUFFER
+prob_16_2 = get_prob_results(16,2)
+prob_16_6 = get_prob_results(16,6)
+prob_16_10 = get_prob_results(16,10)
+prob_16_14 = get_prob_results(16,14)
+prob_16_18 = get_prob_results(16,18)
+prob_32_2 = get_prob_results(32,2)
+prob_32_6 = get_prob_results(32,6)
+prob_32_10 = get_prob_results(32,10)
+prob_32_14 = get_prob_results(32,14)
+prob_32_18 = get_prob_results(32,18)
+
+## GET TABLE OF OVERFLOW PROBABILITIES
+table_overflow = matrix(list(), nrow = 2, ncol = 5)
+table_overflow[1, 1] = prob_16_2[1]
+table_overflow[1, 2] = prob_16_6[1]
+table_overflow[1, 3] = prob_16_10[1]
+table_overflow[1, 4] = prob_16_14[1]
+table_overflow[1, 5] = prob_16_18[1]
+table_overflow[2, 1] = prob_32_2[1]
+table_overflow[2, 2] = prob_32_6[1]
+table_overflow[2, 3] = prob_32_10[1]
+table_overflow[2, 4] = prob_32_14[1]
+table_overflow[2, 5] = prob_32_18[1]
+print(table_overflow)
+
+## GET TABLE OF UNDERFLOW PROBABILITIES
+table_underflow = matrix(list(), nrow = 2, ncol = 5)
+table_underflow[1, 1] = prob_16_2[2]
+table_underflow[1, 2] = prob_16_6[2]
+table_underflow[1, 3] = prob_16_10[2]
+table_underflow[1, 4] = prob_16_14[2]
+table_underflow[1, 5] = prob_16_18[2]
+table_underflow[2, 1] = prob_32_2[2]
+table_underflow[2, 2] = prob_32_6[2]
+table_underflow[2, 3] = prob_32_10[2]
+table_underflow[2, 4] = prob_32_14[2]
+table_underflow[2, 5] = prob_32_18[2]
+print(table_underflow)
+```
+
+##  
+Propose methods to deal with buffer overflow and underflow.
+
+
+## Answer {-}
+One of the most common techniques to avoid underflows and overflows in data exchange between two devices is to increase the maximum buffer size. In this case, we should increase the buffer size to a number larger than 20 (Wikipedia). Also, to enhance the effectiveness in dealing with the buffer overflow, instead of restricting the buffer parameters to 5 paramenters in the `i` list, we can increase such number of parameters by incrementing by 1 instead of 2 or 4 (Wikipedia)
+
+# References
+
+## For Problem 3: Design
+- https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/nchar
+- https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/rawConversion#:~:  
+text=charToRaw%20converts%20a%20length%2Done,with%20%22%22%20for%200%20)
+- http://yuba.stanford.edu/~nbehesht/mythesis-Dec2009/Chapter1-Introduction.pdf
+- https://www.geo.fu-berlin.de/en/v/soga/Basics-of-statistics/Continous-Random-Variables/  
+Continuous-Uniform-Distribution/Continuous-Uniform-Distribution-in-R/index.html#:~:  
+text=The%20runif()%20function%20generates,min%20and%20the%20max%20argument.
+- https://stats.stackexchange.com/questions/67911/how-to-sample-from-a-discrete-distribution
+
+## For Problem 4: Implementation
+- ECS 132 Pizza Post @234
+- https://www.geeksforgeeks.org/exponential-distribution-in-r-programming-dexp-pexp-qexp-and-rexp-functions/
+- https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/matrix
+- https://en.wikipedia.org/wiki/Buffer_underrun
+- https://en.wikipedia.org/wiki/Buffer_overflow#Buffer_overflow_protection
