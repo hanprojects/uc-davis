@@ -26,7 +26,7 @@ ECS 171: Artificial Intelligence
 ECS 188: Ethics in Computer Science
 ```
 ## Dedication 
-I dedicate this hard work commitment to my mother and my love Tang Minshan.
+I dedicate this hard work commitment to my mother and my love TMS.
 
 ## License
 [UC Davis Computer Science - Undergraduate Program](https://www.cs.ucdavis.edu/undergraduate/)
